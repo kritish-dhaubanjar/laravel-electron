@@ -4,7 +4,7 @@ const { spawn } = require('child_process')
 const { app, BrowserWindow } = require('electron/main')
 
 const server = spawn(php, ['-S', 'localhost:8000'], {
-  cwd: join(__dirname, 'api', 'public')
+  cwd: join(__dirname, 'app', 'public')
 })
 
 let splash;
@@ -21,7 +21,7 @@ const createWindow = () => {
     webPreferences: {
       nodeIntegration: true
     },
-    icon: './assets/incon.png'
+    icon: './assets/icon.png'
   })
 
   splash.loadFile('./assets/splash.html')

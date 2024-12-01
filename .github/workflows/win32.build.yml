@@ -1,0 +1,78 @@
+name: Electron App Build (Windows)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up the environment
+        run: |
+          choco uninstall composer
+          choco uninstall php
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Set up PHP 8.3
+        run: |
+          $URI = "https://github.com/NativePHP/php-bin/raw/refs/heads/main/bin/win/x64/php-8.3.zip"
+
+          $OutFile = "$(pwd)\electron\php-bin\php-8.3.zip"
+          $PHP = "$(pwd)\electron\php-bin"
+
+          Invoke-WebRequest -Uri $URI -OutFile $OutFile
+          Expand-Archive -Path $OutFile -DestinationPath $PHP -Force
+          Remove-Item -Path $OutFile -Force
+
+          echo "$PHP" >> $Env:GITHUB_PATH
+
+      - name: Set up Composer
+        run: |
+          php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+          php composer-setup.php
+          php -r "unlink('composer-setup.php');"
+
+          Set-Content composer.bat '@php "%~dp0composer.phar" %*'
+
+      - name: Install Node.js Dependencies (electron)
+        run: |
+          cd electron
+          npm install
+
+      - name: Install PHP Dependencies (api)
+        run: |
+          cd api
+          composer install --no-dev
+
+      - name: Build server
+        run: |
+          Copy-Item -Path "api\.env.example" -Destination "api\.env"
+          New-Item 'api\database\database.sqlite' -type file
+
+          cd api
+          php artisan key:generate
+          php artisan migrate:refresh
+
+      - name: Build electron
+        run: |
+          cd electron
+          npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: laravel-electron-win32
+          include-hidden-files: true
+          path: |
+            electron/dist/win-unpacked
+

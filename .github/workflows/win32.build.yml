@@ -49,17 +49,17 @@ jobs:
           cd electron
           npm install
 
-      - name: Install PHP Dependencies (app)
+      - name: Install PHP Dependencies (application)
         run: |
-          cd app
+          cd application
           composer install --no-dev
 
       - name: Build server
         run: |
-          Copy-Item -Path "app\.env.example" -Destination "app\.env"
-          New-Item 'app\database\database.sqlite' -type file
+          Copy-Item -Path "application\.env.example" -Destination "application\.env"
+          New-Item 'application\database\database.sqlite' -type file
 
-          cd app
+          cd application
           php artisan key:generate
           php artisan migrate:refresh
 

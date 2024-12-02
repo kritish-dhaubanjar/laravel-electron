@@ -63,6 +63,6 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-  server.kill()
+  server?.kill()
   app.quit()
 })

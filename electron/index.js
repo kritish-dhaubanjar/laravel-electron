@@ -3,11 +3,8 @@ const { join } = require('path')
 const { spawn } = require('child_process')
 const { app, BrowserWindow } = require('electron/main')
 
-const server = spawn(php, ['-S', 'localhost:8000'], {
-  cwd: join(__dirname, 'app', 'public')
-})
-
-let splash;
+let server
+let splash
 app.disableHardwareAcceleration();
 
 const createWindow = () => {
@@ -43,6 +40,15 @@ const createWindow = () => {
   win.once('ready-to-show', () => {
     splash.close()
     win.show()
+  })
+
+  server = spawn(php, ['-S', 'localhost:8000'], { cwd: join(__dirname, 'application', 'public') })
+
+  server.stderr.on('data', (data) => console.log(data.toString()))
+  server.stderr.on('data', (data) => console.log(data.toString()))
+
+  server.on('spawn', () => {
+    win.loadURL('http://localhost:8000')
   })
 }
 
